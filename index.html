@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Journal</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Karla:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1f2e;
+    --paper: #f2f4f8;
+    --aged: #e4e8f0;
+    --rust: #1e3a6e;
+    --gold: #3a5f96;
+    --sage: #2a6b5a;
+    --blue: #1a4a7a;
+    --plum: #4a3a7a;
+    --teal: #2a5f7a;
+    --line: rgba(30,40,100,0.1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #c8ccd8;
+    background-image:
+      radial-gradient(ellipse at 20% 0%, #bcc2d4 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 100%, #b8bece 0%, transparent 55%);
+    min-height: 100vh;
+    font-family: 'Karla', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 16px 80px;
+    color: var(--ink);
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    color: var(--rust);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* ── TABS: 3 top + 2 bottom ── */
+  .tabs {
+    width: 100%;
+    max-width: 620px;
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 2;
+    animation: fadeDown 0.8s 0.05s ease both;
+  }
+
+  .tab-btn {
+    flex: 1 1 33.333%;
+    background: rgba(0,0,0,0.04);
+    border: 1px solid rgba(30,40,80,0.2);
+    color: #5a6480;
+    font-family: 'Karla', sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 10px 4px 9px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    position: relative;
+    top: 1px;
+    border-bottom: none;
+  }
+
+  /* Row 1: tabs 1-3 */
+  .tab-btn:nth-child(1) { border-radius: 2px 0 0 0; border-right: none; }
+  .tab-btn:nth-child(2) { border-right: none; }
+  .tab-btn:nth-child(3) { border-radius: 0 2px 0 0; }
+  /* Row 2: tabs 4-5 — each 50% */
+  .tab-btn:nth-child(4) { flex: 1 1 50%; border-top: none; border-right: none; }
+  .tab-btn:nth-child(5) { flex: 1 1 50%; border-top: none; }
+
+  .tab-btn:hover { color: var(--rust); background: rgba(0,0,0,0.06); }
+
+  .tab-btn.active {
+    color: var(--rust);
+    border-color: rgba(30,40,80,0.3);
+    background: var(--paper);
+    font-weight: 500;
+    z-index: 3;
+    border-bottom: 1px solid var(--paper);
+  }
+
+  /* ── PAGES ── */
+  .page { display: none; width: 100%; max-width: 620px; }
+  .page.active { display: block; }
+
+  /* ── ENTRY CARD ── */
+  .entry-card {
+    background: var(--paper);
+    width: 100%;
+    border-radius: 0 0 2px 2px;
+    padding: 40px 44px 36px;
+    box-shadow:
+      0 2px 4px rgba(0,0,0,0.08),
+      0 8px 32px rgba(0,0,0,0.12),
+      inset 0 0 0 1px rgba(30,40,80,0.1);
+    position: relative;
+    animation: fadeUp 0.45s ease both;
+  }
+
+  .entry-card::before { display: none; }
+
+  .page-gratitude .entry-card::before { background: rgba(90,122,90,0.35); }
+  .page-kindness  .entry-card::before { background: rgba(58,90,120,0.35); }
+  .page-habits    .entry-card::before { background: rgba(107,58,90,0.35); }
+
+  /* ── DATE ROW ── */
+  .date-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 30px;
+    padding-left: 28px;
+  }
+
+  .date-row label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.85rem;
+    color: var(--rust);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .page-gratitude .date-row label { color: var(--sage); }
+  .page-kindness  .date-row label { color: var(--blue); }
+  .page-habits    .date-row label { color: var(--plum); }
+
+  .date-row input[type="datetime-local"] {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    font-family: 'Karla', sans-serif;
+    font-size: 0.9rem;
+    color: var(--ink);
+    padding: 4px 0;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .date-row input:focus                 { border-bottom-color: var(--rust); }
+  .page-gratitude .date-row input:focus { border-bottom-color: var(--sage); }
+  .page-kindness  .date-row input:focus { border-bottom-color: var(--blue); }
+  .page-habits    .date-row input:focus { border-bottom-color: var(--plum); }
+
+  /* ── FIELDS ── */
+  .field { margin-bottom: 26px; padding-left: 28px; }
+
+  .field-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .field-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    font-style: italic;
+    color: var(--gold);
+    min-width: 18px;
+  }
+
+  .field-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    font-weight: 300;
+    color: var(--rust);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .page-gratitude .field-label { color: var(--sage); }
+  .page-kindness  .field-label { color: var(--blue); }
+  .page-habits    .field-label { color: var(--plum); }
+
+  .field textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    resize: none;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    line-height: 2rem;
+    color: var(--ink);
+    padding: 4px 0;
+    outline: none;
+    min-height: 64px;
+    transition: border-color 0.2s;
+  }
+
+  .field textarea:focus                        { border-bottom-color: var(--rust); }
+  .page-gratitude .field textarea:focus        { border-bottom-color: var(--sage); }
+  .page-kindness  .field textarea:focus        { border-bottom-color: var(--blue); }
+  .page-habits    .field textarea:focus        { border-bottom-color: var(--plum); }
+
+  .field textarea::placeholder                 { color: rgba(44,62,107,0.3);  font-style: italic; }
+  .page-gratitude .field textarea::placeholder { color: rgba(58,122,106,0.35); font-style: italic; }
+  .page-kindness  .field textarea::placeholder { color: rgba(26,74,122,0.3);   font-style: italic; }
+  .page-habits    .field textarea::placeholder { color: rgba(74,58,107,0.3);   font-style: italic; }
+
+  /* ── SAVE BTN ── */
+  .save-btn {
+    display: block;
+    margin: 10px auto 0;
+    background: var(--rust);
+    color: var(--paper);
+    border: none;
+    font-family: 'Karla', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    padding: 12px 36px;
+    cursor: pointer;
+    transition: filter 0.2s, transform 0.1s;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
+
+  .page-gratitude .save-btn { background: var(--sage); }
+  .page-kindness  .save-btn { background: var(--blue); }
+  .page-habits    .save-btn { background: var(--plum); }
+  .save-btn:hover  { filter: brightness(1.15); }
+  .save-btn:active { transform: scale(0.98); }
+
+  /* ── ENTRIES ── */
+  .entries-section { width: 100%; margin-top: 48px; }
+
+  .entries-heading {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.8rem;
+    color: #5a6480;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .entries-heading span {
+    display: inline-block;
+    background: #c8ccd8;
+    padding: 0 12px;
+  }
+
+  .entries-heading::before {
+    content: '';
+    display: block;
+    border-top: 1px solid #b0b8cc;
+    margin-bottom: -0.6em;
+  }
+
+  .entry-item {
+    background: var(--aged);
+    border-radius: 2px;
+    padding: 24px 32px 20px 52px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(30,40,80,0.08);
+    position: relative;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .entry-item::before { display: none; }
+
+  .page-gratitude .entry-item::before { background: rgba(90,122,90,0.3);  }
+  .page-kindness  .entry-item::before { background: rgba(58,90,120,0.28); }
+  .page-habits    .entry-item::before { background: rgba(107,58,90,0.28); }
+
+  .entry-meta {
+    font-size: 0.73rem;
+    letter-spacing: 0.18em;
+    color: var(--rust);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+
+  .page-gratitude .entry-meta { color: var(--sage); }
+  .page-kindness  .entry-meta { color: var(--blue); }
+  .page-habits    .entry-meta { color: var(--plum); }
+
+  .entry-fields { display: flex; flex-direction: column; gap: 10px; }
+  .entry-field-row { display: flex; gap: 8px; align-items: flex-start; }
+
+  .entry-field-key {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.78rem;
+    font-style: italic;
+    color: var(--gold);
+    min-width: 90px;
+    padding-top: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  .entry-field-val {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--ink);
+    flex: 1;
+  }
+
+  .delete-btn {
+    position: absolute;
+    top: 14px; right: 14px;
+    background: none;
+    border: none;
+    color: rgba(44,62,107,0.3);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 2px 5px;
+    transition: color 0.2s;
+  }
+  .delete-btn:hover { color: var(--rust); }
+
+  .email-entry-btn {
+    position: absolute;
+    top: 14px; right: 40px;
+    background: none;
+    border: none;
+    color: rgba(44,62,107,0.3);
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 2px 5px;
+    transition: color 0.2s;
+    line-height: 1.2;
+  }
+  .email-entry-btn:hover { color: var(--rust); }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 10px;
+  }
+
+  .outline-btn {
+    background: transparent;
+    color: var(--rust);
+    border: 1px solid rgba(44,62,107,0.4);
+    font-family: 'Karla', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    padding: 12px 28px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .outline-btn:hover  { background: rgba(44,62,107,0.07); }
+  .outline-btn:active { transform: scale(0.98); }
+
+  .page-gratitude .outline-btn { color: var(--sage); border-color: rgba(58,122,106,0.4); }
+  .page-gratitude .outline-btn:hover { background: rgba(58,122,106,0.07); }
+  .page-kindness  .outline-btn { color: var(--blue); border-color: rgba(26,74,122,0.4); }
+  .page-kindness  .outline-btn:hover { background: rgba(26,74,122,0.07); }
+  .page-habits    .outline-btn { color: var(--plum); border-color: rgba(74,58,107,0.4); }
+  .page-habits    .outline-btn:hover { background: rgba(74,58,107,0.07); }
+  .page-tracking  .outline-btn { color: var(--teal); border-color: rgba(42,96,96,0.4); }
+  .page-tracking  .outline-btn:hover { background: rgba(42,96,96,0.07); }
+
+  /* ── TRACKING PAGE ── */
+  .page-tracking .entry-card::before { background: rgba(42,96,96,0.35); }
+  .page-tracking .date-row label     { color: var(--teal); }
+  .page-tracking .date-row input:focus { border-bottom-color: var(--teal); }
+  .page-tracking .save-btn          { background: var(--teal); }
+  .page-tracking .entry-item::before { background: rgba(42,96,96,0.28); }
+  .page-tracking .entry-meta        { color: var(--teal); }
+
+  .checklist { padding-left: 28px; margin-bottom: 28px; }
+
+  .checklist-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 16px;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+    cursor: pointer;
+  }
+
+  .check-item input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid rgba(42,96,96,0.4);
+    border-radius: 2px;
+    background: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .check-item input[type="checkbox"]:checked {
+    background: var(--teal);
+    border-color: var(--teal);
+  }
+
+  .check-item input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-size: 13px;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .check-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.15rem;
+    color: var(--ink);
+    letter-spacing: 0.04em;
+  }
+
+  .check-label.checked {
+    text-decoration: line-through;
+    color: rgba(28,21,16,0.4);
+  }
+
+  .check-note {
+    font-family: 'Karla', sans-serif;
+    font-size: 0.72rem;
+    color: #6a7490;
+    display: block;
+    margin-top: 2px;
+  }
+
+  .track-entry-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .track-check {
+    font-size: 1rem;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  /* ── MONTHLY SUMMARY ── */
+  .monthly-card {
+    background: var(--paper);
+    border-radius: 2px;
+    padding: 20px 24px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(30,40,80,0.08);
+  }
+
+  .monthly-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--teal);
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+
+  .monthly-bars { display: flex; flex-direction: column; gap: 10px; }
+
+  .monthly-row { display: flex; align-items: center; gap: 10px; }
+
+  .monthly-label {
+    font-family: 'Karla', sans-serif;
+    font-size: 0.8rem;
+    color: var(--ink);
+    min-width: 80px;
+  }
+
+  .bar-track {
+    flex: 1;
+    height: 10px;
+    background: rgba(42,96,96,0.1);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    background: var(--teal);
+    border-radius: 5px;
+    transition: width 0.4s ease;
+  }
+
+  .monthly-count {
+    font-family: 'Karla', sans-serif;
+    font-size: 0.78rem;
+    color: var(--teal);
+    min-width: 48px;
+    text-align: right;
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 32px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--rust);
+    color: #f4f5f8;
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 10px 24px;
+    border-radius: 2px;
+    opacity: 0;
+    transition: transform 0.3s, opacity 0.3s;
+    pointer-events: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @keyframes fadeDown {
+    from { opacity:0; transform:translateY(-14px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(14px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  @media (max-width: 500px) {
+    .entry-card { padding-left: 36px; padding-right: 22px; }
+    .entry-card::before { left: 28px; }
+    .date-row, .field { padding-left: 16px; }
+    .entry-item { padding-left: 38px; padding-right: 22px; }
+    .entry-item::before { left: 26px; }
+    .tab-btn { font-size: 0.6rem; letter-spacing: 0.07em; padding: 9px 3px; }
+  }
+</style>
+</head>
+<body>
+
+<header><h1>Journal</h1></header>
+
+<div style="width:100%;max-width:620px;text-align:center;margin-bottom:14px;animation:fadeDown 0.8s 0.1s ease both;">
+  <button onclick="exportAll()" style="background:#7a3a10;color:#faf7f2;border:none;font-family:'Karla',sans-serif;font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;padding:10px 28px;cursor:pointer;border-radius:2px;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+    &#9993; Export All Entries
+  </button>
+</div>
+
+<!-- TABS: 2×2 grid -->
+<div class="tabs">
+  <button class="tab-btn active" data-tab="stf"       onclick="switchTab('stf')">Situation · Thought · Feeling</button>
+  <button class="tab-btn"        data-tab="gratitude" onclick="switchTab('gratitude')">Gratitude</button>
+  <button class="tab-btn"        data-tab="kindness"  onclick="switchTab('kindness')">Acts of Kindness</button>
+  <button class="tab-btn"        data-tab="habits"    onclick="switchTab('habits')">Habits Interrupted</button>
+  <button class="tab-btn"        data-tab="tracking"  onclick="switchTab('tracking')">Daily Tracking</button>
+</div>
+
+<!-- ══ PAGE 1: STF ══ -->
+<div class="page active" id="page-stf">
+  <div class="entry-card">
+    <div class="date-row">
+      <label>Date &amp; Time</label>
+      <input type="datetime-local" id="stf-date">
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-num">1.</span><span class="field-label">Situation</span></div>
+      <textarea id="stf-situation" rows="2" placeholder="What was happening?"></textarea>
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-num">2.</span><span class="field-label">Thought</span></div>
+      <textarea id="stf-thought" rows="2" placeholder="What went through your mind?"></textarea>
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-num">3.</span><span class="field-label">Feeling</span></div>
+      <textarea id="stf-feeling" rows="2" placeholder="What did you feel?"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="save-btn" onclick="saveSTF()">Save Entry</button>
+      <button class="outline-btn" onclick="emailAllSTF()">&#9993; Email All</button>
+    </div>
+  </div>
+  <div class="entries-section" id="stf-section" style="display:none">
+    <p class="entries-heading"><span>Past Entries</span></p>
+    <div id="stf-list"></div>
+  </div>
+</div>
+
+<!-- ══ PAGE 2: GRATITUDE ══ -->
+<div class="page page-gratitude" id="page-gratitude">
+  <div class="entry-card">
+    <div class="date-row">
+      <label>Date &amp; Time</label>
+      <input type="datetime-local" id="grat-date">
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-num">1.</span><span class="field-label">Gratitude</span></div>
+      <textarea id="grat-1" rows="2" placeholder="I am grateful for…"></textarea>
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-num">2.</span><span class="field-label">Gratitude</span></div>
+      <textarea id="grat-2" rows="2" placeholder="I am grateful for…"></textarea>
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-num">3.</span><span class="field-label">Gratitude</span></div>
+      <textarea id="grat-3" rows="2" placeholder="I am grateful for…"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="save-btn" onclick="saveGratitude()">Save Entry</button>
+      <button class="outline-btn" onclick="emailAllGratitude()">&#9993; Email All</button>
+    </div>
+  </div>
+  <div class="entries-section" id="grat-section" style="display:none">
+    <p class="entries-heading"><span>Past Entries</span></p>
+    <div id="grat-list"></div>
+  </div>
+</div>
+
+<!-- ══ PAGE 3: KINDNESS ══ -->
+<div class="page page-kindness" id="page-kindness">
+  <div class="entry-card">
+    <div class="date-row">
+      <label>Date &amp; Time</label>
+      <input type="datetime-local" id="kind-date">
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-num">1.</span><span class="field-label">Act of Kindness</span></div>
+      <textarea id="kind-1" rows="2" placeholder="What did you do for someone?"></textarea>
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-num">2.</span><span class="field-label">Act of Kindness</span></div>
+      <textarea id="kind-2" rows="2" placeholder="What did you do for someone?"></textarea>
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-num">3.</span><span class="field-label">Act of Kindness</span></div>
+      <textarea id="kind-3" rows="2" placeholder="What did you do for someone?"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="save-btn" onclick="saveKindness()">Save Entry</button>
+      <button class="outline-btn" onclick="emailAllKindness()">&#9993; Email All</button>
+    </div>
+  </div>
+  <div class="entries-section" id="kind-section" style="display:none">
+    <p class="entries-heading"><span>Past Entries</span></p>
+    <div id="kind-list"></div>
+  </div>
+</div>
+
+<!-- ══ PAGE 4: HABITS INTERRUPTED ══ -->
+<div class="page page-habits" id="page-habits">
+  <div class="entry-card">
+    <div class="date-row">
+      <label>Date &amp; Time</label>
+      <input type="datetime-local" id="hab-date">
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-num">1.</span><span class="field-label">Habit Interrupted</span></div>
+      <textarea id="hab-1" rows="2" placeholder="Which habit was disrupted?"></textarea>
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-num">2.</span><span class="field-label">Habit Interrupted</span></div>
+      <textarea id="hab-2" rows="2" placeholder="Which habit was disrupted?"></textarea>
+    </div>
+    <div class="field">
+      <div class="field-header"><span class="field-num">3.</span><span class="field-label">Habit Interrupted</span></div>
+      <textarea id="hab-3" rows="2" placeholder="Which habit was disrupted?"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="save-btn" onclick="saveHabits()">Save Entry</button>
+      <button class="outline-btn" onclick="emailAllHabits()">&#9993; Email All</button>
+    </div>
+  </div>
+  <div class="entries-section" id="hab-section" style="display:none">
+    <p class="entries-heading"><span>Past Entries</span></p>
+    <div id="hab-list"></div>
+  </div>
+</div>
+
+<!-- ══ PAGE 5: DAILY TRACKING ══ -->
+<div class="page page-tracking" id="page-tracking">
+  <div class="entry-card">
+    <div class="date-row">
+      <label>Date &amp; Time</label>
+      <input type="datetime-local" id="track-date">
+    </div>
+    <div class="checklist">
+      <div class="checklist-title">Today I tracked</div>
+
+      <label class="check-item">
+        <input type="checkbox" id="track-water" onchange="toggleLabel(this)">
+        <span class="check-label" id="lbl-water">
+          💧 Water
+          <span class="check-note">Stayed hydrated throughout the day</span>
+        </span>
+      </label>
+
+      <label class="check-item">
+        <input type="checkbox" id="track-movement" onchange="toggleLabel(this)">
+        <span class="check-label" id="lbl-movement">
+          🏃 Movement
+          <span class="check-note">Got my body moving today</span>
+        </span>
+      </label>
+
+      <label class="check-item">
+        <input type="checkbox" id="track-rest" onchange="toggleLabel(this)">
+        <span class="check-label" id="lbl-rest">
+          🌙 Rest
+          <span class="check-note">Got adequate rest or sleep</span>
+        </span>
+      </label>
+    </div>
+    <div class="btn-row">
+      <button class="save-btn" onclick="saveTracking()">Save Entry</button>
+      <button class="outline-btn" onclick="emailAllTracking()">&#9993; Email All</button>
+    </div>
+  </div>
+  <div class="entries-section" id="track-section" style="display:none">
+    <p class="entries-heading"><span>Past Entries</span></p>
+    <div id="track-list"></div>
+  </div>
+  <div class="entries-section" id="monthly-section" style="display:none">
+    <p class="entries-heading"><span>Monthly Summary</span></p>
+    <div id="monthly-list"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  function nowLocal() {
+    const d = new Date(); d.setSeconds(0,0);
+    return d.toISOString().slice(0,16);
+  }
+
+  function fmt(iso) {
+    if (!iso) return 'No date';
+    return new Date(iso).toLocaleString(undefined, {
+      weekday:'short', month:'short', day:'numeric',
+      year:'numeric', hour:'numeric', minute:'2-digit'
+    });
+  }
+
+  function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  }
+
+  let toastT;
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastT);
+    toastT = setTimeout(() => el.classList.remove('show'), 2200);
+  }
+
+  function load(k)    { try { return JSON.parse(localStorage.getItem(k))||[]; } catch { return []; } }
+  function store(k,v) { localStorage.setItem(k, JSON.stringify(v)); }
+
+  function emailAppToSelf() {
+    const html = document.documentElement.outerHTML;
+    const subject = encodeURIComponent('My Journal App');
+    const body = encodeURIComponent(
+      'Here is your journal app. Save this email, then:\n' +
+      '1. Tap and hold the text below\n2. Select All → Copy\n3. Open Notes app → Paste\n4. Save as journal.html\n\n' +
+      '--- COPY EVERYTHING BELOW THIS LINE ---\n\n' + html
+    );
+    window.location.href = `mailto:Jrudenick@gmail.com?subject=${subject}&body=${body}`;
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + tab));
+  }
+
+  /* ── EXPORT ALL ── */
+  function exportAll() {
+    const stf   = load('stf_v1');
+    const grat  = load('grat_v1');
+    const kind  = load('kind_v1');
+    const hab   = load('hab_v1');
+    const track = load('track_v1');
+
+    const hasAny = stf.length || grat.length || kind.length || hab.length || track.length;
+    if (!hasAny) { showToast('No entries to export yet'); return; }
+
+    let body = 'MY JOURNAL — FULL EXPORT\n' + new Date().toLocaleDateString() + '\n\n';
+
+    if (stf.length) {
+      body += '══ SITUATION · THOUGHT · FEELING ══\n\n';
+      body += stf.map((e,i) => `Entry ${i+1} — ${fmt(e.date)}\nSituation: ${e.s||'—'}\nThought: ${e.t||'—'}\nFeeling: ${e.f||'—'}`).join('\n\n---\n\n');
+      body += '\n\n';
+    }
+
+    if (grat.length) {
+      body += '══ GRATITUDE ══\n\n';
+      body += grat.map((e,i) => `Entry ${i+1} — ${fmt(e.date)}\n1. ${e.g1||'—'}\n2. ${e.g2||'—'}\n3. ${e.g3||'—'}`).join('\n\n---\n\n');
+      body += '\n\n';
+    }
+
+    if (kind.length) {
+      body += '══ ACTS OF KINDNESS ══\n\n';
+      body += kind.map((e,i) => `Entry ${i+1} — ${fmt(e.date)}\n1. ${e.k1||'—'}\n2. ${e.k2||'—'}\n3. ${e.k3||'—'}`).join('\n\n---\n\n');
+      body += '\n\n';
+    }
+
+    if (hab.length) {
+      body += '══ HABITS INTERRUPTED ══\n\n';
+      body += hab.map((e,i) => `Entry ${i+1} — ${fmt(e.date)}\n1. ${e.h1||'—'}\n2. ${e.h2||'—'}\n3. ${e.h3||'—'}`).join('\n\n---\n\n');
+      body += '\n\n';
+    }
+
+    if (track.length) {
+      body += '══ DAILY TRACKING ══\n\n';
+      body += track.map((e,i) => `Entry ${i+1} — ${fmt(e.date)}\n💧 Water: ${e.water?'✓':'✗'}\n🏃 Movement: ${e.move?'✓':'✗'}\n🌙 Rest: ${e.rest?'✓':'✗'}`).join('\n\n---\n\n');
+    }
+
+    const subject = encodeURIComponent('My Journal — Full Export ' + new Date().toLocaleDateString());
+    window.location.href = `mailto:${EMAIL_TO}?subject=${subject}&body=${encodeURIComponent(body)}`;
+  }
+
+  /* ── STF ── */
+  document.getElementById('stf-date').value = nowLocal();
+
+  function saveSTF() {
+    const date = document.getElementById('stf-date').value;
+    const s = document.getElementById('stf-situation').value.trim();
+    const t = document.getElementById('stf-thought').value.trim();
+    const f = document.getElementById('stf-feeling').value.trim();
+    if (!s&&!t&&!f) { showToast('Nothing to save yet'); return; }
+    const arr = load('stf_v1');
+    arr.unshift({id:Date.now(), date, s, t, f});
+    store('stf_v1', arr); renderSTF();
+    ['stf-situation','stf-thought','stf-feeling'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('stf-date').value = nowLocal();
+    showToast('Entry saved');
+  }
+
+  function delSTF(id) { store('stf_v1', load('stf_v1').filter(e=>e.id!==id)); renderSTF(); }
+
+  const EMAIL_TO = 'Jrudenick@gmail.com';
+
+  function stfEntryText(e) {
+    return `Date: ${fmt(e.date)}\nSituation: ${e.s||'—'}\nThought: ${e.t||'—'}\nFeeling: ${e.f||'—'}`;
+  }
+
+  function emailSTF(id) {
+    const e = load('stf_v1').find(x => x.id === id);
+    if (!e) return;
+    const subject = encodeURIComponent('Journal Entry — ' + fmt(e.date));
+    const body    = encodeURIComponent(stfEntryText(e));
+    window.location.href = `mailto:${EMAIL_TO}?subject=${subject}&body=${body}`;
+  }
+
+  function emailAllSTF() {
+    const arr = load('stf_v1');
+    if (!arr.length) { showToast('No entries to send'); return; }
+    const subject = encodeURIComponent('Journal Entries — Situation · Thought · Feeling');
+    const body    = encodeURIComponent(arr.map((e,i) => `Entry ${i+1}\n${stfEntryText(e)}`).join('\n\n---\n\n'));
+    window.location.href = `mailto:${EMAIL_TO}?subject=${subject}&body=${body}`;
+  }
+
+  function renderSTF() {
+    const arr = load('stf_v1');
+    document.getElementById('stf-section').style.display = arr.length ? 'block' : 'none';
+    document.getElementById('stf-list').innerHTML = arr.map(e => `
+      <div class="entry-item">
+        <button class="email-entry-btn" onclick="emailSTF(${e.id})" title="Email this entry">&#9993;</button>
+        <button class="delete-btn" onclick="delSTF(${e.id})" title="Delete">✕</button>
+        <div class="entry-meta">${fmt(e.date)}</div>
+        <div class="entry-fields">
+          ${e.s?`<div class="entry-field-row"><span class="entry-field-key">Situation</span><span class="entry-field-val">${esc(e.s)}</span></div>`:''}
+          ${e.t?`<div class="entry-field-row"><span class="entry-field-key">Thought</span><span class="entry-field-val">${esc(e.t)}</span></div>`:''}
+          ${e.f?`<div class="entry-field-row"><span class="entry-field-key">Feeling</span><span class="entry-field-val">${esc(e.f)}</span></div>`:''}
+        </div>
+      </div>`).join('');
+  }
+
+  /* ── GRATITUDE ── */
+  document.getElementById('grat-date').value = nowLocal();
+
+  function saveGratitude() {
+    const date = document.getElementById('grat-date').value;
+    const g1 = document.getElementById('grat-1').value.trim();
+    const g2 = document.getElementById('grat-2').value.trim();
+    const g3 = document.getElementById('grat-3').value.trim();
+    if (!g1&&!g2&&!g3) { showToast('Nothing to save yet'); return; }
+    const arr = load('grat_v1');
+    arr.unshift({id:Date.now(), date, g1, g2, g3});
+    store('grat_v1', arr); renderGratitude();
+    ['grat-1','grat-2','grat-3'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('grat-date').value = nowLocal();
+    showToast('Entry saved');
+  }
+
+  function delGrat(id) { store('grat_v1', load('grat_v1').filter(e=>e.id!==id)); renderGratitude(); }
+
+  function emailAllGratitude() {
+    const arr = load('grat_v1');
+    if (!arr.length) { showToast('No entries to send'); return; }
+    const subject = encodeURIComponent('Journal Entries — Gratitude');
+    const body = encodeURIComponent(arr.map((e,i) =>
+      `Entry ${i+1} — ${fmt(e.date)}\n1. ${e.g1||'—'}\n2. ${e.g2||'—'}\n3. ${e.g3||'—'}`
+    ).join('\n\n---\n\n'));
+    window.location.href = `mailto:${EMAIL_TO}?subject=${subject}&body=${body}`;
+  }
+
+  function renderGratitude() {
+    const arr = load('grat_v1');
+    document.getElementById('grat-section').style.display = arr.length ? 'block' : 'none';
+    document.getElementById('grat-list').innerHTML = arr.map(e => `
+      <div class="entry-item">
+        <button class="delete-btn" onclick="delGrat(${e.id})">✕</button>
+        <div class="entry-meta">${fmt(e.date)}</div>
+        <div class="entry-fields">
+          ${e.g1?`<div class="entry-field-row"><span class="entry-field-key">Gratitude 1</span><span class="entry-field-val">${esc(e.g1)}</span></div>`:''}
+          ${e.g2?`<div class="entry-field-row"><span class="entry-field-key">Gratitude 2</span><span class="entry-field-val">${esc(e.g2)}</span></div>`:''}
+          ${e.g3?`<div class="entry-field-row"><span class="entry-field-key">Gratitude 3</span><span class="entry-field-val">${esc(e.g3)}</span></div>`:''}
+        </div>
+      </div>`).join('');
+  }
+
+  /* ── KINDNESS ── */
+  document.getElementById('kind-date').value = nowLocal();
+
+  function saveKindness() {
+    const date = document.getElementById('kind-date').value;
+    const k1 = document.getElementById('kind-1').value.trim();
+    const k2 = document.getElementById('kind-2').value.trim();
+    const k3 = document.getElementById('kind-3').value.trim();
+    if (!k1&&!k2&&!k3) { showToast('Nothing to save yet'); return; }
+    const arr = load('kind_v1');
+    arr.unshift({id:Date.now(), date, k1, k2, k3});
+    store('kind_v1', arr); renderKindness();
+    ['kind-1','kind-2','kind-3'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('kind-date').value = nowLocal();
+    showToast('Entry saved');
+  }
+
+  function delKind(id) { store('kind_v1', load('kind_v1').filter(e=>e.id!==id)); renderKindness(); }
+
+  function emailAllKindness() {
+    const arr = load('kind_v1');
+    if (!arr.length) { showToast('No entries to send'); return; }
+    const subject = encodeURIComponent('Journal Entries — Acts of Kindness');
+    const body = encodeURIComponent(arr.map((e,i) =>
+      `Entry ${i+1} — ${fmt(e.date)}\n1. ${e.k1||'—'}\n2. ${e.k2||'—'}\n3. ${e.k3||'—'}`
+    ).join('\n\n---\n\n'));
+    window.location.href = `mailto:${EMAIL_TO}?subject=${subject}&body=${body}`;
+  }
+
+  function renderKindness() {
+    const arr = load('kind_v1');
+    document.getElementById('kind-section').style.display = arr.length ? 'block' : 'none';
+    document.getElementById('kind-list').innerHTML = arr.map(e => `
+      <div class="entry-item">
+        <button class="delete-btn" onclick="delKind(${e.id})">✕</button>
+        <div class="entry-meta">${fmt(e.date)}</div>
+        <div class="entry-fields">
+          ${e.k1?`<div class="entry-field-row"><span class="entry-field-key">Kindness 1</span><span class="entry-field-val">${esc(e.k1)}</span></div>`:''}
+          ${e.k2?`<div class="entry-field-row"><span class="entry-field-key">Kindness 2</span><span class="entry-field-val">${esc(e.k2)}</span></div>`:''}
+          ${e.k3?`<div class="entry-field-row"><span class="entry-field-key">Kindness 3</span><span class="entry-field-val">${esc(e.k3)}</span></div>`:''}
+        </div>
+      </div>`).join('');
+  }
+
+  /* ── HABITS ── */
+  document.getElementById('hab-date').value = nowLocal();
+
+  function saveHabits() {
+    const date = document.getElementById('hab-date').value;
+    const h1 = document.getElementById('hab-1').value.trim();
+    const h2 = document.getElementById('hab-2').value.trim();
+    const h3 = document.getElementById('hab-3').value.trim();
+    if (!h1&&!h2&&!h3) { showToast('Nothing to save yet'); return; }
+    const arr = load('hab_v1');
+    arr.unshift({id:Date.now(), date, h1, h2, h3});
+    store('hab_v1', arr); renderHabits();
+    ['hab-1','hab-2','hab-3'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('hab-date').value = nowLocal();
+    showToast('Entry saved');
+  }
+
+  function delHab(id) { store('hab_v1', load('hab_v1').filter(e=>e.id!==id)); renderHabits(); }
+
+  function emailAllHabits() {
+    const arr = load('hab_v1');
+    if (!arr.length) { showToast('No entries to send'); return; }
+    const subject = encodeURIComponent('Journal Entries — Habits Interrupted');
+    const body = encodeURIComponent(arr.map((e,i) =>
+      `Entry ${i+1} — ${fmt(e.date)}\n1. ${e.h1||'—'}\n2. ${e.h2||'—'}\n3. ${e.h3||'—'}`
+    ).join('\n\n---\n\n'));
+    window.location.href = `mailto:${EMAIL_TO}?subject=${subject}&body=${body}`;
+  }
+
+  function renderHabits() {
+    const arr = load('hab_v1');
+    document.getElementById('hab-section').style.display = arr.length ? 'block' : 'none';
+    document.getElementById('hab-list').innerHTML = arr.map(e => `
+      <div class="entry-item">
+        <button class="delete-btn" onclick="delHab(${e.id})">✕</button>
+        <div class="entry-meta">${fmt(e.date)}</div>
+        <div class="entry-fields">
+          ${e.h1?`<div class="entry-field-row"><span class="entry-field-key">Habit 1</span><span class="entry-field-val">${esc(e.h1)}</span></div>`:''}
+          ${e.h2?`<div class="entry-field-row"><span class="entry-field-key">Habit 2</span><span class="entry-field-val">${esc(e.h2)}</span></div>`:''}
+          ${e.h3?`<div class="entry-field-row"><span class="entry-field-key">Habit 3</span><span class="entry-field-val">${esc(e.h3)}</span></div>`:''}
+        </div>
+      </div>`).join('');
+  }
+
+  /* ── TRACKING ── */
+  document.getElementById('track-date').value = nowLocal();
+
+  function toggleLabel(cb) {
+    const lbl = cb.closest('.check-item').querySelector('.check-label');
+    lbl.classList.toggle('checked', cb.checked);
+  }
+
+  function saveTracking() {
+    const date   = document.getElementById('track-date').value;
+    const water  = document.getElementById('track-water').checked;
+    const move   = document.getElementById('track-movement').checked;
+    const rest   = document.getElementById('track-rest').checked;
+    if (!water && !move && !rest) { showToast('Nothing checked yet'); return; }
+    const arr = load('track_v1');
+    arr.unshift({ id: Date.now(), date, water, move, rest });
+    store('track_v1', arr); renderTracking(); renderMonthly();
+    ['track-water','track-movement','track-rest'].forEach(id => {
+      const el = document.getElementById(id);
+      el.checked = false;
+      toggleLabel(el);
+    });
+    document.getElementById('track-date').value = nowLocal();
+    showToast('Entry saved');
+  }
+
+  function delTrack(id) { store('track_v1', load('track_v1').filter(e=>e.id!==id)); renderTracking(); renderMonthly(); }
+
+  function emailAllTracking() {
+    const arr = load('track_v1');
+    if (!arr.length) { showToast('No entries to send'); return; }
+    const subject = encodeURIComponent('Journal Entries — Daily Tracking');
+    const body = encodeURIComponent(arr.map((e,i) =>
+      `Entry ${i+1} — ${fmt(e.date)}\n💧 Water: ${e.water?'✓':'✗'}\n🏃 Movement: ${e.move?'✓':'✗'}\n🌙 Rest: ${e.rest?'✓':'✗'}`
+    ).join('\n\n---\n\n'));
+    window.location.href = `mailto:${EMAIL_TO}?subject=${subject}&body=${body}`;
+  }
+
+  function renderTracking() {
+    const arr = load('track_v1');
+    document.getElementById('track-section').style.display = arr.length ? 'block' : 'none';
+    document.getElementById('track-list').innerHTML = arr.map(e => `
+      <div class="entry-item">
+        <button class="delete-btn" onclick="delTrack(${e.id})">✕</button>
+        <div class="entry-meta">${fmt(e.date)}</div>
+        <div class="entry-fields">
+          <div class="track-entry-row"><span class="track-check">${e.water ? '✅' : '⬜'}</span><span class="entry-field-val">💧 Water</span></div>
+          <div class="track-entry-row"><span class="track-check">${e.move  ? '✅' : '⬜'}</span><span class="entry-field-val">🏃 Movement</span></div>
+          <div class="track-entry-row"><span class="track-check">${e.rest  ? '✅' : '⬜'}</span><span class="entry-field-val">🌙 Rest</span></div>
+        </div>
+      </div>`).join('');
+  }
+
+  function renderMonthly() {
+    const arr = load('track_v1');
+    const section = document.getElementById('monthly-section');
+    if (!arr.length) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+
+    // Group by YYYY-MM
+    const months = {};
+    arr.forEach(e => {
+      if (!e.date) return;
+      const key = e.date.slice(0, 7); // "2026-04"
+      if (!months[key]) months[key] = { water:0, move:0, rest:0, days: new Set() };
+      const day = e.date.slice(0, 10);
+      months[key].days.add(day);
+      if (e.water) months[key].water++;
+      if (e.move)  months[key].move++;
+      if (e.rest)  months[key].rest++;
+    });
+
+    const sorted = Object.keys(months).sort().reverse();
+
+    document.getElementById('monthly-list').innerHTML = sorted.map(key => {
+      const m = months[key];
+      const daysInMonth = new Date(key.slice(0,4), key.slice(5,7), 0).getDate();
+      const label = new Date(key + '-02').toLocaleString(undefined, { month: 'long', year: 'numeric' });
+
+      function bar(count) {
+        const pct = Math.round((count / daysInMonth) * 100);
+        return `<div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>`;
+      }
+
+      return `
+        <div class="monthly-card">
+          <div class="monthly-title">${label}</div>
+          <div class="monthly-bars">
+            <div class="monthly-row">
+              <span class="monthly-label">💧 Water</span>
+              ${bar(m.water)}
+              <span class="monthly-count">${m.water} / ${daysInMonth} days</span>
+            </div>
+            <div class="monthly-row">
+              <span class="monthly-label">🏃 Movement</span>
+              ${bar(m.move)}
+              <span class="monthly-count">${m.move} / ${daysInMonth} days</span>
+            </div>
+            <div class="monthly-row">
+              <span class="monthly-label">🌙 Rest</span>
+              ${bar(m.rest)}
+              <span class="monthly-count">${m.rest} / ${daysInMonth} days</span>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  /* ── INIT ── */
+  renderSTF(); renderGratitude(); renderKindness(); renderHabits(); renderTracking(); renderMonthly();
+</script>
+</body>
+</html>
